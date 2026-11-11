@@ -1,0 +1,61 @@
+USE ganesh_food_agency;
+
+CREATE TABLE IF NOT EXISTS admins (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(80) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS menus (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  icon VARCHAR(30) DEFAULT '🍬',
+  is_active BOOLEAN DEFAULT TRUE,
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  menu_id INT NULL,
+  name VARCHAR(160) NOT NULL,
+  description TEXT,
+  image VARCHAR(255),
+  price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  rating DECIMAL(2,1) DEFAULT 4.5,
+  stock INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (menu_id) REFERENCES menus(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS customers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  address TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_customer_phone (phone)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  total DECIMAL(10,2) NOT NULL,
+  payment_method VARCHAR(30) DEFAULT 'COD',
+  status ENUM('Pending','Processing','Delivered','Cancelled') DEFAULT 'Pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  product_id INT NULL,
+  product_name VARCHAR(160) NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+);
